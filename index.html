@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<script src="pify.js"></script>
+<!--via https://wzrd.in/standalone/pify@latest-->
+<script src="https://unpkg.com/browserfs"></script>
+<script src="https://unpkg.com/isomorphic-git"></script>
+<script>
+  BrowserFS.configure({ fs: "IndexedDB", options: {} }, function (err) {
+    if (err) return console.log(err);
+    window.fs = BrowserFS.BFSRequire("fs");
+    window.pfs = pify(fs); // make a Promisified version
+    (async function main() {
+      let repo = { fs, dir: './repo' }
+      await git.clone({
+        ...repo,
+        url: 'https://cors-buster-tbgktfqyku.now.sh/github.com/fasiha/client-git',
+        singleBranch: true,
+        depth: 1
+      });
+      console.log('$ls\n', await git.listFiles({ fs: window.fs, dir: '.' }));
+      console.log('$ls repo\n', await git.listFiles({ fs: window.fs, dir: 'repo' }));
+    })();
+  });
+</script>
