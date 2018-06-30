@@ -10,7 +10,8 @@
     window.fs = BrowserFS.BFSRequire("fs");
     window.pfs = pify(fs); // make a Promisified version
     (async function main() {
-      let repo = { fs, dir: './repo' }
+      let dir = './repo';
+      let repo = { fs, dir }
       await git.clone({
         ...repo,
         url: 'https://cors-buster-tbgktfqyku.now.sh/github.com/fasiha/client-git',
@@ -18,7 +19,22 @@
         depth: 1
       });
       console.log('$ls\n', await git.listFiles({ fs: window.fs, dir: '.' }));
-      console.log('$ls repo\n', await git.listFiles({ fs: window.fs, dir: 'repo' }));
+      console.log('$ls repo\n', await git.listFiles({ fs: window.fs, dir }));
+
+      await pfs.writeFile('repo/data.txt', 'Hi!\n', 'utf8');
+      await git.add({ fs, dir, filepath: 'data.txt' })
+      let sha = await git.commit({
+        fs,
+        dir,
+        message: 'Test from isomorphic-git: committing data',
+        author: {
+          name: 'Mr. Test',
+          email: 'mrtest@example.com'
+        }
+      });
+      console.log(sha);
+
+      // await git.push({fs, dir, token: TOKEN})
     })();
   });
 </script>
